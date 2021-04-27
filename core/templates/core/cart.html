@@ -1,0 +1,119 @@
+{% extends 'core/base.html' %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      function deleteCart(cartIds) {
+        $.ajax({
+          headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+          url: '/cart/delete/',
+          method: 'post',
+          data: { cart_ids: cartIds }
+        }).done(function (response) {
+          location.reload();
+        })
+      }
+
+      $('.all-delete-btn').click(function () {
+        if (confirm('商品をすべて削除してもよろしいですか？')) {
+          const cartIds = $('.delete-btn').map(function () {
+            return $(this).data('cart_id');
+          }).get();
+          deleteCart(cartIds);
+        }
+      });
+
+      $('.delete-btn').click(function () {
+        const cartId = [$(this).data('cart_id')];
+        deleteCart(cartId);
+      });
+
+      $('.payment-btn').click(function () {
+        if (!('{{ user.stripe_customer_id }}')) {
+          alert('クレジットカードを登録してください');
+          return false;
+        }
+
+        if (confirm('購入を確定してもよろしいですか？')) {
+          $.ajax({
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            url: '/payment/',
+            method: 'post',
+            data: { amount: '{{ user.cart_total_amount }}' },
+          }).done(function (response) {
+            if (response['status'] === 'failed') {
+              $('.error').text('');
+              $('.succeeded').text('');
+              let found = false;
+              $('.error').each(function () {
+                if ($(this).attr('id') === response['stripeCode']) {
+                  $(this).text(response['message']);
+                  found = true;
+                }
+              });
+              if (!found) {
+                $('#other-error').text('入力情報に誤りがあります');
+              }
+              console.log(response['status'])
+              console.log(response['message'])
+            } else {
+              $('.error').text('');
+              $('.succeeded').text('');
+              console.log('success');
+              $(`#customer_id_succeeded`).text(response['status']);
+            }
+          });
+        }
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block css %}
+  <style>
+    #qty {
+      width: 3em;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  {% if user.carts.count > 0 %}
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>数量</th>
+          <th>合計</th>
+          <th><button class="all-delete-btn">すべて削除</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cart in user.carts.all %}
+          <tr>
+            <td>
+              <a href="{% url 'core:product_detail' cart.product.pk %}">
+                <img src="{{ cart.product.photo.url }}" width="200">
+              </a>
+              {{ cart.product.name }}
+            </td>
+            <td>
+              <form method="post" action="{% url 'core:cart_update' cart.pk %}">
+                {% csrf_token %}
+                <input type="number" id="qty" name="qty" value="{{ cart.qty }}">
+                <button>変更</button>
+              </form>
+            </td>
+            <td>¥{{ cart.sum }}</td>
+            <td><button class="delete-btn" data-cart_id="{{ cart.pk }}">削除</button></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button class="payment-btn">購入を確定する</button>
+    <span class="succeeded" id="customer_id_succeeded"></span>
+  {% else %}
+    現在カートに商品はありません
+  {% endif %}
+{% endblock %}

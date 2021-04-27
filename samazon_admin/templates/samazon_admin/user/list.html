@@ -1,0 +1,96 @@
+{% extends 'samazon_admin/base.html' %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      // ページのリンクをクリックした際の処理
+      $('.page-link').click(function () {
+        // ページ番号を表すinputタグのvalue属性の値を、クリックされたページの値にする
+        $('input[name=page]').val($(this).data('page'));
+        // id="order-form"のformタグを取得
+        const $form = $('#search-form');
+        // formタグのaction属性のURLにリクエストする
+        $form.submit();
+        // aタグのリンクの効果を無効にする
+        return false;
+      });
+
+      $('.revive-btn').click(function () {
+        if (confirm('復帰させてもよろしいですか？')) {
+          const $form = $(this).parents('form');
+          $form.submit();
+        }
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <form id="search-form">
+    <input type="hidden" name="page" value="1">
+
+    <table>
+      <tr>
+        <td>氏名など</td>
+        <td><input name="keyword" value="{{ request.GET.keyword }}"></td>
+      </tr>
+    </table>
+
+    <button>検索</button>
+  </form>
+
+  <hr>
+  <br>
+
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>名前</th>
+      <th>メールアドレス</th>
+      <th>電話番号</th>
+      <th></th>
+    </tr>
+    {% for user in object_list %}
+      <tr>
+        <td>{{ user.pk }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phone }}</td>
+        <td>
+          <form method="post" action="{% url 'samazon_admin:user_delete_revive' user.pk %}">
+            {% csrf_token %}
+            {% if user.deleted_at %}
+              <button type="button" class="revive-btn">復帰</button>
+            {% else %}
+              <button type="button" class="delete-btn">削除</button>
+            {% endif %}
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <br>
+
+  {% if paginator.num_pages != 1 %}
+    {% if page_obj.has_previous %}
+      <a class="page" href="" data-page="{{ page_obj.number|add:-1 }}">prev | </a>
+    {% else %}
+      <span>prev | </span>
+    {% endif %}
+
+    {% for page in paginator.page_range %}
+      {% if page == page_obj.number %}
+        <span>{{ page }} | </span>
+      {% else %}
+        <a class="page" href="" data-page="{{ page }}">{{ page }} | </a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a class="page" href="" data-page="{{ page_obj.number|add:1 }}">next</a>
+    {% else %}
+      <span>next</span>
+    {% endif %}
+  {% endif %}
+{% endblock %}

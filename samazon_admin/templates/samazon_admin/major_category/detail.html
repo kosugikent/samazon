@@ -1,0 +1,26 @@
+{% extends 'samazon_admin/base.html' %}
+
+{% block content %}
+  <form method="post" action="{% url 'samazon_admin:major_category_delete' major_category.pk %}">
+    {% csrf_token %}
+    <!-- base.htmlのjqueryに削除確認処理がある -->
+    <button type="button" class="delete-btn">削除</button>
+  </form>
+
+  <form action="{% url 'samazon_admin:major_category_update' major_category.pk %}">
+    <table>
+      <tbody>
+        <tr>
+          <th>親カテゴリー名</th><td>{{ major_category.name }}</td>
+        </tr>
+        <tr>
+          <th>説明</th><td>{{ major_category.description }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- base.htmlのjqueryに戻る処理がある -->
+    <button type="button" class="back-btn" data-action="{% url 'samazon_admin:major_category_list' %}">戻る</button>
+    <button>編集</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'samazon_admin/base.html' %}
+
+{% block content %}
+  <form action="{% url 'samazon_admin:major_category_create' %}">
+    <button>新規登録</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>親カテゴリー名</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for major_category in major_categories %}
+        <tr>
+          <td><a href="{% url 'samazon_admin:major_category_detail' major_category.pk %}">{{ major_category.pk }}</a></td>
+          <td>{{ major_category.name }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

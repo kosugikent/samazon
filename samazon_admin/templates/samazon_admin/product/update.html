@@ -1,0 +1,32 @@
+{% extends 'samazon_admin/base.html' %}
+
+{% block content %}
+  <!-- 画像を送信するために、enctype="multipart/form-data"を使用 -->
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <table>
+      <tr>
+        <th>画像</th><td>{{ form.photo }}</td>
+      </tr>
+      <tr>
+        <th>カテゴリー</th><td>{{ form.category }}</td>
+      </tr>
+      <tr>
+        <th>商品名</th><td>{{ form.name }}</td>
+      </tr>
+      <tr>
+        <th>説明</th><td>{{ form.description }}</td>
+      </tr>
+      <tr>
+        <th>価格</th><td>{{ form.price }}</td>
+      </tr>
+      <tr>
+        <th>オススメ</th><td>{{ form.is_recommended }}</td>
+      </tr>
+    </table>
+
+    <button type="button" class="back-btn" data-action="{% url 'samazon_admin:product_detail' form.instance.pk %}">戻る</button>
+    <button>編集</button>
+  </form>
+{% endblock %}

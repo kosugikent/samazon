@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+  <h4>新規会員登録</h4>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <table>
+      <tr>
+        <td><label for="id_username">氏名</label></td>
+        <td>{{ form.username }}</td>
+      </tr>
+      <tr>
+        <td><label for="id_email">メールアドレス</label></td>
+        <td>
+          {{ form.email }}<br>
+          {% for error in form.email.errors %}
+            {{ error }}
+          {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <td><label for="id_postal_code">郵便番号</label></td>
+        <td>{{ form.postal_code }}</td>
+      </tr>
+      <tr>
+        <td><label for="id_address">住所</label></td>
+        <td>{{ form.address }}</td>
+      </tr>
+      <tr>
+        <td><label for="id_phone">電話番号</label></td>
+        <td>{{ form.phone }}</td>
+      </tr>
+      <tr>
+        <td><label for="id_password">パスワード</label></td>
+        <td>
+          {{ form.password }}<br>
+          {% for error in form.password.errors %}
+            {{ error }}
+          {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <td><label for="id_password_confirmation">パスワード確認</label></td>
+        <td>{{ form.password_confirmation }}</td>
+      </tr>
+    </table>
+
+    <button>アカウント作成</button>
+  </form>
+{% endblock %}

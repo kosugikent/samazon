@@ -1,0 +1,176 @@
+{% extends 'core/base.html' %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      // メジャーカテゴリー名がクリックされた際の処理
+      $('.major-category').click(function () {
+        // メジャーカテゴリー名の下のカテゴリーに、category-hideクラスがあるかチェックする
+        if ($(this).next().hasClass('category-hide')) {
+          // category-hideクラスがある場合は非表示になっているので、そのカテゴリーを表示させる
+          $(this).next().show();
+          // クラスからcategory-hideを削除する
+          $(this).next().removeClass('category-hide');
+          // クラスにcategory-showを追加する
+          $(this).next().addClass('category-show');
+        } else {
+          // category-hideクラスがない場合は表示されているので、そのカテゴリーを非表示にする
+          $(this).next().hide();
+          // クラスからcategory-showを削除する
+          $(this).next().removeClass('category-show');
+          // クラスにcategory-hideを追加する
+          $(this).next().addClass('category-hide');
+        }
+      });
+
+      // カテゴリーがクリックされた際の処理
+      $('.category-name').click(function () {
+        // <input type="hidden" name="category_name">のvalueに、選択されたカテゴリー名を代入する
+        $('input[name=category_name]').val($(this).data('category_name'));
+        // id="search-param-form"のformを取得する
+        const $searchParamForm = $('#search-param-form');
+        // formを送信する
+        $searchParamForm.submit();
+      });
+
+      // レビューの星がクリックされた際の処理
+      $(document).on('click', '.star-section', function () {
+        // <input type="hidden" name="star">のvalueに、選択された星の数を代入する
+        $('input[name=star]').val($(this).data('star'));
+        // id="search-param-form"のformを取得する
+        const $searchParamForm = $('#search-param-form');
+        // formを送信する
+        $searchParamForm.submit();
+      });
+
+      // ページリンクがクリックされた際の処理
+      $('.page').click(function () {
+        // <input type="hidden" name="page">のvalueに、クリックされたページ数を代入する
+        $('input[name=page]').val($(this).data('page'));
+        // id="search-param-form"のformを取得する
+        const $searchParamForm = $('#search-param-form');
+        // formを送信する
+        $searchParamForm.submit();
+        // ページリンクの効果を無効にする
+        return false;
+      });
+
+      // URLのcategory_nameパラメータを取得する
+      const categoryName = '{{ request.GET.category_name }}';
+      if (categoryName) {
+        // category_nameパラメータがある場合、メジャーカテゴリーの下に現在選択されているカテゴリー名を表示させる
+        $('.category-section').append(`<span class="font-weight-bold">${categoryName}</span>`);
+      }
+
+      // レビューの星を作成する
+      for (let star = 5; star >= 1; star -= 1) {
+        // レビューの星を5~1まで追加していく
+        $('.review-section').append(
+          `<div>
+            <span class="star-section" data-star="${star}">
+              <span class="star">${'★'.repeat(star)}</span>
+              <span class="greater" id="greater${star}">以上</span><br>
+            </span>
+          </div>`
+        )
+      }
+
+      // URLのstarパラメータを取得する
+      const star = '{{ request.GET.star }}';
+      if (star) {
+        // starパラメータがある場合、対象のレビューの星の「以上」を太文字にする
+        $(`#greater${star}`).addClass('font-weight-bold');
+      }
+    });
+  </script>
+{% endblock %}
+
+{% block css %}
+  <style>
+    .category-section > ul {
+        list-style: none;
+        padding-left: 20px;
+    }
+
+    .major-category, .category-name, .star-section {
+        cursor: pointer;
+    }
+
+    .star {
+        display: inline-block;
+        width: 5.5em;
+    }
+
+    .greater {
+        display: inline-block;
+        width: 2em;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-3 search-param">
+      <form id="search-param-form" action="{% url 'core:search' %}">
+        <input type="hidden" name="page" value="1">
+        <input type="hidden" name="search_word" value="{{ request.GET.search_word }}">
+
+        <div class="category-section">
+          <h6 class="font-weight-bold">カテゴリー</h6>
+          {% for major_category_name, categories in categories %}
+            <h6 class="major-category">< {{ major_category_name }}</h6>
+            <ul class="category-hide" style="display: none">
+              {% for category in categories %}
+                <li class="category-name" data-category_name="{{ category.name }}">{{ category.name }}</li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+          <input type="hidden" name="category_name" value="{{ request.GET.category_name }}">
+        </div>
+
+        <br>
+
+        <div class="review-section">
+          <h6 class="font-weight-bold">カスタマーレビュー</h6>
+          <input type="hidden" name="star" value="{{ request.GET.star }}">
+        </div>
+      </form>
+    </div>
+
+    <div class="col-9">
+      <div class="d-flex flex-wrap">
+        {% for product in object_list %}
+          <div class="mr-4 mb-4">
+            <a href="{% url 'core:product_detail' product.pk %}">
+              <img src="{{ product.photo.url }}" width="300"><br>
+            </a>
+            {{ product.name }}<br>
+            ¥{{ product.price }}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if paginator.num_pages != 1 %}
+        {% if page_obj.has_previous %}
+          <a class="page" href="" data-page="{{ page_obj.number|add:-1 }}">prev | </a>
+        {% else %}
+          <span>prev | </span>
+        {% endif %}
+
+        {% for page in paginator.page_range %}
+          {% if page == page_obj.number %}
+            <span>{{ page }} | </span>
+          {% else %}
+            <a class="page" href="" data-page="{{ page }}">{{ page }} | </a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a class="page" href="" data-page="{{ page_obj.number|add:1 }}">next</a>
+        {% else %}
+          <span>next</span>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

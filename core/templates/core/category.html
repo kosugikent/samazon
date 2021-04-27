@@ -1,0 +1,8 @@
+{% for major_category_name, categories in categories %}
+  <h3>{{ major_category_name }}</h3>
+  <ul>
+    {% for category in categories %}
+      <li><a href="{% url 'core:product_list' category.pk %}">{{ category.name }}</a></li>
+    {% endfor %}
+  </ul>
+{% endfor %}

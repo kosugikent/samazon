@@ -1,0 +1,96 @@
+{% extends 'core/base.html' %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      // 並び替えセレクトボックスのオプションの値を１つ１つチェックする
+      $('select[name=order_by] option').each(function () {
+        // オプションの値が、直前に選択されたオプションの値であるか調べる
+        if ($(this).val() === '{{ request.GET.order_by }}') {
+          // オプションの値が、直前に選択されたオプションの値である場合、selected属性を追加する
+          $(this).attr('selected', true);
+        }
+      });
+
+      // 並び替えセレクトボックスの値が変更された際の処理
+      $('select[name=order_by]').change(function () {
+        // id="order-form"のformタグを取得
+        const $form = $('#order-form');
+        // formタグのaction属性のURLにリクエストする
+        $form.submit();
+      });
+
+      // ページのリンクをクリックした際の処理
+      $('.page').click(function () {
+        // ページ番号を表すinputタグのvalue属性の値を、クリックされたページの値にする
+        $('input[name=page]').val($(this).data('page'));
+        // id="order-form"のformタグを取得
+        const $form = $('#order-form');
+        // formタグのaction属性のURLにリクエストする
+        $form.submit();
+        // aタグのリンクの効果を無効にする
+        return false;
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-2">
+      {% include 'core/category.html' %}
+    </div>
+
+    <div class="col-10">
+      <a href="/">トップ</a> > <a href="#">{{ category.major_category.name }}</a> > {{ category.name }}
+      <br><br>
+      <h3>{{ category.name }}の商品一覧{{ category.products.all.count }}件</h3>
+      <form id="order-form" action="{% url 'core:product_list' category.pk %}">
+        <input type="hidden" name="page" value="1">
+        <select name="order_by">
+          <option value="id">並び替え</option>
+          <option value="price">価格の安い順</option>
+          <option value="-price">価格の高い順</option>
+          <option value="created_at">出品の古い順</option>
+          <option value="-created_at">出品の新しい順</option>
+        </select>
+      </form>
+      <br><br>
+
+      <div class="d-flex flex-wrap">
+        <!-- object_listには、対象のページのproductインスタンスが代入されている -->
+        {% for product in object_list %}
+          <div class="mr-4 mb-4">
+            <a href="{% url 'core:product_detail' product.pk %}">
+              <img src="{{ product.photo.url }}" width="300"><br>
+            </a>
+            {{ product.name }}<br>
+            ¥{{ product.price }}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if paginator.num_pages != 1 %}
+        {% if page_obj.has_previous %}
+          <a class="page" href="" data-page="{{ page_obj.number|add:-1 }}">prev | </a>
+        {% else %}
+          <span>prev | </span>
+        {% endif %}
+
+        {% for page in paginator.page_range %}
+          {% if page == page_obj.number %}
+            <span>{{ page }} | </span>
+          {% else %}
+            <a class="page" href="" data-page="{{ page }}">{{ page }} | </a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a class="page" href="" data-page="{{ page_obj.number|add:1 }}">next</a>
+        {% else %}
+          <span>next</span>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

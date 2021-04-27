@@ -1,0 +1,100 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-2">
+      <!-- category.htmlを読み込む -->
+      {% include 'core/category.html' %}
+    </div>
+
+    <div class="col-10">
+      <a href="/">トップ</a> > <a href="#">{{ product.category.major_category.name }}</a> > <a href="{% url 'core:product_list' product.category.pk %}">{{ product.category.name }}</a>
+      <br><br>
+      <img src="{{ product.photo.url }}" width="500"><br>
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.description }}</p>
+      <h3>¥{{ product.price }}(税込)</h3>
+      <!--
+        ログインしている場合、user変数にはログインユーザーのインスタンスが代入されている。
+        user変数は、djangoが自動的にテンプレートにレンダリングするので、viewから渡さなくても使用できる。
+      -->
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'core:cart_add' %}">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.pk }}">
+          <label for="qty">数量: </label><input type="number" id="qty" name="qty" required><br>
+          <button>カートに追加</button>
+        </form>
+
+        <br>
+
+        <form method="post" action="{% url 'core:favorite_add_delete' %}">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.pk }}">
+          <button class="favorite-btn">
+            {% if favorite_added %}
+              お気に入り削除
+            {% else %}
+              お気に入り追加
+            {% endif %}
+          </button>
+        </form>
+
+        <br>
+
+        <h3>カスタマーレビュー</h3>
+
+        {% if object_list %}
+          {% for review in object_list %}
+            <img src="https://images-fe.ssl-images-amazon.com/images/S/amazon-avatars-global/default._CR0,0,1024,1024_SX48_.png" class="" data-src="https://images-fe.ssl-images-amazon.com/images/S/amazon-avatars-global/default._CR0,0,1024,1024_SX48_.png">
+            {{ review.user.username }}<br>
+            {{ review.score_star }}<br>
+            {{ review.created_at }}<br>
+            {{ review.body }}<br><br>
+          {% endfor %}
+        {% else %}
+          まだカスタマーレビューはありません
+        {% endif %}
+
+        {% if paginator.num_pages != 1 %}
+          {% if page_obj.has_previous %}
+            <a href="{% url 'core:product_detail' product.pk %}?page={{ page_obj.number|add:-1 }}">prev | </a>
+          {% else %}
+            <span>prev | </span>
+          {% endif %}
+
+          {% for page in paginator.page_range %}
+            {% if page == page_obj.number %}
+              <span>{{ page }} | </span>
+            {% else %}
+              <a href="{% url 'core:product_detail' product.pk %}?page={{ page }}">{{ page }} | </a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a href="{% url 'core:product_detail' product.pk %}?page={{ page_obj.number|add:1 }}">next</a>
+          {% else %}
+            <span>next</span>
+          {% endif %}
+        {% endif %}
+
+        <br><br>
+
+        <form method="post" action="{% url 'core:product_review' product.pk %}">
+          {% csrf_token %}
+          <h5>評価</h5>
+          <select name="score">
+            <option value="5" class="review-score-color">★★★★★</option>
+            <option value="4" class="review-score-color">★★★★</option>
+            <option value="3" class="review-score-color">★★★</option>
+            <option value="2" class="review-score-color">★★</option>
+            <option value="1" class="review-score-color">★</option>
+          </select>
+          <h5>レビュー内容</h5>
+          <textarea name="body"></textarea><br>
+          <button>レビューを追加</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

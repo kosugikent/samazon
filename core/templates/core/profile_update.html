@@ -1,0 +1,97 @@
+{% extends 'core/base.html' %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      // 編集ボタンがクリックされた際の処理
+      $('.edit-btn').click(function () {
+        // 編集ボタンの親タグであるclass="show"属性のdivタグを非表示にする
+        $(this).parents('.show').hide();
+        // 編集ボタンの親タグであるtdの子要素に定義されている、class="edit"属性のdivタグを表示させる
+        $(this).parents('td').children('.edit').show();
+      });
+
+      // キャンセルボタンがクリックされた際の処理
+      $('.cancel-btn').click(function () {
+        // キャンセルボタンの親タグであるclass="edit"属性のdivタグを非表示にする
+        $(this).parents('.edit').hide();
+        // キャンセルボタンの親タグであるtdの子要素に定義されている、class="show"属性のdivタグを表示させる
+        $(this).parents('td').children('.show').show();
+      })
+
+      $('.delete-btn').click(function () {
+        if (confirm('退会してもよろしいですか？')) {
+          const $form = $(this).parents('form');
+          $form.submit();
+        }
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <table>
+    <tr>
+      <th>
+        <label>氏名</label>
+      </th>
+      <td>
+        <div class="show">
+          <label for="username">{{ user.username }}</label>
+          <button class="edit-btn">編集</button>
+        </div>
+        <div class="edit" style="display: none">
+          <form method="post" action="{% url 'core:profile_update' %}">
+            {% csrf_token %}
+            <input id="username" name="username" value="{{ user.username }}">
+            <button class="save-btn">保存</button>
+            <button type="button" class="cancel-btn">キャンセル</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <th>
+        <label>メールアドレス</label>
+      </th>
+      <td>
+        <div class="show">
+          <label for="email">{{ user.email }}</label>
+          <button class="edit-btn">編集</button>
+        </div>
+        <div class="edit" style="display: none">
+          <form method="post" action="{% url 'core:profile_update' %}">
+            {% csrf_token %}
+            <input id="email" type="email" name="email" value="{{ user.email }}">
+            <button class="save-btn">保存</button>
+            <button type="button" class="cancel-btn">キャンセル</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <th>
+        <label>電話番号</label>
+      </th>
+      <td>
+        <div class="show">
+          <label for="phone">{{ user.phone }}</label>
+          <button class="edit-btn">編集</button>
+        </div>
+        <div class="edit" style="display: none">
+          <form method="post" action="{% url 'core:profile_update' %}">
+            {% csrf_token %}
+            <input id="phone" name="phone" value="{{ user.phone }}">
+            <button class="save-btn">保存</button>
+            <button type="button" class="cancel-btn">キャンセル</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <form method="post" action="{% url 'core:user_delete' %}">
+    {% csrf_token %}
+    <button type="button" class="delete-btn">退会する</button>
+  </form>
+{% endblock %}

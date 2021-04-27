@@ -1,0 +1,38 @@
+{% extends 'samazon_admin/base.html' %}
+
+{% block content %}
+  <form method="post" action="{% url 'samazon_admin:product_delete' product.pk %}">
+    {% csrf_token %}
+    <!-- base.htmlのjqueryに削除確認処理がある -->
+    <button type="button" class="delete-btn">削除</button>
+  </form>
+
+  <form action="{% url 'samazon_admin:product_update' product.pk %}">
+    <table>
+      <tbody>
+        <tr>
+          <td colspan="2"><img src="{{ product.photo.url }}" alt="{{ product.name }}" width="300"></td>
+        </tr>
+        <tr>
+          <th>カテゴリー</th><td>{{ product.category.name }}</td>
+        </tr>
+        <tr>
+          <th>商品名</th><td>{{ product.name }}</td>
+        </tr>
+        <tr>
+          <th>説明</th><td>{{ product.description }}</td>
+        </tr>
+        <tr>
+          <th>価格</th><td>{{ product.price }}</td>
+        </tr>
+        <tr>
+          <th>オススメ</th><td>{% if product.is_recommended %} yes {% else %} no {% endif %}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- base.htmlのjqueryに戻る処理がある -->
+    <button type="button" class="back-btn" data-action="{% url 'samazon_admin:product_list' %}">戻る</button>
+    <button>編集</button>
+  </form>
+{% endblock %}

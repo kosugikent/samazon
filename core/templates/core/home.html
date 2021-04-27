@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-2">
+      {% include 'core/category.html' %}
+    </div>
+
+    <div class="col-10">
+      <h3>おすすめ商品</h3>
+      {% for product in recommends %}
+        <a href="{% url 'core:product_detail' product.pk %}">
+          <img src="{{ product.photo.url }}" width="300">
+        </a>
+      {% endfor %}
+
+      <br><br><br>
+
+      <h3>新着商品</h3>
+      {% for product in new_arrivals %}
+        <a href="{% url 'core:product_detail' product.pk %}">
+          <img src="{{ product.photo.url }}" width="300">
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

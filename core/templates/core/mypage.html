@@ -1,0 +1,10 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+  <ul>
+    <li><a href="{% url 'core:profile_update' %}">会員情報編集</a></li>
+    <li><a href="{% url 'core:credit_card_create' %}">クレジットカード登録</a></li>
+    <li><a href="{% url 'core:address_update' %}">お届け先の変更</a></li>
+    <li><a href="{% url 'core:logout' %}">ログアウト</a></li>
+  </ul>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'core/base.html' %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      $('#card-number').on('input', function () {
+        const val = $(this).val();
+        if (val.length > 16) {
+          $(this).val(val.slice(0, 16));
+        }
+      });
+
+      $('.exp').on('input', function () {
+        const val = $(this).val();
+        if (val.length > 2) {
+          $(this).val(val.slice(0, 2));
+        }
+      });
+
+      $('#cvc').on('input', function () {
+        const val = $(this).val();
+        if (val.length > 3) {
+          $(this).val(val.slice(0, 3));
+        }
+      });
+
+      $('.register-btn').click(function () {
+        const cardNumberLength = $('#card-number').val().length;
+        if (cardNumberLength !== 16) {
+          $('.error').text('');
+          $('#incorrect_number').text('正しいカード番号を入力してください');
+          return false;
+        }
+
+        const data = {
+          number: $('#card-number').val(),
+          exp_month: $('#exp-month').val(),
+          exp_year: $('#exp-year').val(),
+          cvc: $('#cvc').val(),
+        };
+
+        $.ajax({
+          headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+          url: '/mypage/credit_card/create',
+          method: 'post',
+          data: data
+        }).done(function (response) {
+          if (response['status'] === 'failed') {
+            $('.error').text('');
+            $('.succeeded').text('');
+            let found = false;
+            $('.error').each(function () {
+              if ($(this).attr('id') === response['stripeCode']) {
+                $(this).text(response['message']);
+                found = true;
+              }
+            });
+            if (!found) {
+              $('#other-error').text('入力情報に誤りがあります');
+            }
+            console.log(response['status']);
+            console.log(response['stripeCode']);
+            console.log(response['message']);
+          } else {
+            $('.error').text('');
+            $('.succeeded').text('');
+            $(`#card_info_succeeded`).text(response['status']);
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <table>
+    <tr>
+      <td><label for="card-number">カード番号</label></td>
+      <td>
+        <input type="number" id="card-number" name="card_number" placeholder="カード番号を入力してください" autocomplete="cc-number">(4000 0039 2000 0003)
+        <span class="error" id="incorrect_number"></span>
+        <span class="error" id="invalid_number"></span>
+        <span class="error" id="other-error"></span>
+      </td>
+    </tr>
+    <tr>
+      <td>使用期限</td>
+      <td>
+        <input type="number" class="exp" id="exp-month" name="exp_month" placeholder="月" autocomplete="cc-emp-month">
+        /
+        <input type="number" class="exp" id="exp-year" name="exp_year" placeholder="年" autocomplete="cc-emp-year">
+        <span class="error" id="invalid_expiry_month"></span>
+        <span class="error" id="invalid_expiry_year"></span>
+      </td>
+    </tr>
+    <tr>
+      <td><label for="cvc">セキュリティコード</label></td>
+      <td>
+        <input type="number" id="cvc" name="cvc" placeholder="セキュリティコードを入力してください" autocomplete="cc-csc">
+        <span class="error" id="invalid_cvc"></span>
+      </td>
+    </tr>
+  </table>
+
+  <button class="register-btn">登録</button>
+  <span class="succeeded" id="card_info_succeeded"></span>
+{% endblock %}

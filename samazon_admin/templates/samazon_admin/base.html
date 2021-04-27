@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="{% static 'core/js/jquery-3.5.1.min.js' %}"></script>
+  <script src="{% static 'core/js/bootstrap.min.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'core/css/bootstrap.min.css' %}">
+  {% block javascript %}{% endblock %}
+  <script>
+    $(function () {
+      $('.back-btn').click(function () {
+        const $form = $('#form');
+        $form.attr('action', $(this).data('action'));
+        $form.submit();
+      });
+
+      $('.delete-btn').click(function () {
+        if (confirm('削除してもよろしいですか？')) {
+          const $form = $(this).parents('form');
+          $form.submit();
+        }
+      });
+    });
+  </script>
+  <style>
+    .samazon a {
+        text-decoration: none;
+        color: black;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <h1 class="samazon"><a href="{% url 'samazon_admin:home' %}">Samazon管理</a></h1>
+    <hr>
+
+    <form id="form"></form>
+
+    <div class="row">
+      <div class="col-2">
+        <ul>
+          <li><a href="{% url 'samazon_admin:major_category_list' %}">親カテゴリー一覧</a></li>
+          <li><a href="{% url 'samazon_admin:category_list' %}">カテゴリー一覧</a></li>
+          <li><a href="{% url 'samazon_admin:product_list' %}">商品一覧</a></li>
+          <li><a href="{% url 'samazon_admin:user_list' %}">顧客一覧</a></li>
+        </ul>
+      </div>
+      <div class="col-10">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

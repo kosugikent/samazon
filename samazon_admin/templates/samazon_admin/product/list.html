@@ -1,0 +1,115 @@
+{% extends 'samazon_admin/base.html' %}
+
+{% block javascript %}
+  <script>
+    $(function () {
+      // 並び替えセレクトボックスのオプションの値を１つ１つチェックする
+      $('select[name=order_by] option').each(function () {
+        // オプションの値が、直前に選択されたオプションの値であるか調べる
+        if ($(this).val() === '{{ request.GET.order_by }}') {
+          // オプションの値が、直前に選択されたオプションの値である場合、selected属性を追加する
+          $(this).attr('selected', true);
+        }
+      });
+
+      // 並び替えセレクトボックスの値が変更された際の処理
+      $('select[name=order_by]').change(function () {
+        // id="search-form"のformタグを取得
+        const $form = $('#search-form');
+        // formタグのaction属性のURLにリクエストする
+        $form.submit();
+      });
+
+      // ページのリンクをクリックした際の処理
+      $('.page').click(function () {
+        // ページ番号を表すinputタグのvalue属性の値を、クリックされたページの値にする
+        $('input[name=page]').val($(this).data('page'));
+        // id="order-form"のformタグを取得
+        const $form = $('#search-form');
+        // formタグのaction属性のURLにリクエストする
+        $form.submit();
+        // aタグのリンクの効果を無効にする
+        return false;
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+  <form id="search-form">
+    <input type="hidden" name="page" value="1">
+
+    <table>
+      <tr>
+        <td>
+          <select name="order_by">
+            <option value="pk">並び替え</option>
+            <option value="price">価格の安い順</option>
+            <option value="-price">価格の高い順</option>
+            <option value="created_at">出品の古い順</option>
+            <option value="-created_at">出品の新しい順</option>
+          </select>
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>商品名</td>
+        <td><input name="keyword" value="{{ request.GET.keyword }}"></td>
+      </tr>
+    </table>
+
+    <button>検索</button>
+  </form>
+
+  <hr>
+  <br>
+
+  <form action="{% url 'samazon_admin:product_create' %}">
+    <button>新規登録</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>画像</th>
+        <th>カテゴリー</th>
+        <th>商品名</th>
+        <th>価格</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in object_list %}
+        <tr>
+          <td><a href="{% url 'samazon_admin:product_detail' product.pk %}">{{ product.pk }}</a></td>
+          <td><img src="{{ product.photo.url }}" alt="{{ product.name }}" width="100"></td>
+          <td>{{ product.category.name }}</td>
+          <td>{{ product.name }}</td>
+          <td>{{ product.price }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if paginator.num_pages != 1 %}
+    {% if page_obj.has_previous %}
+      <a class="page" href="" data-page="{{ page_obj.number|add:-1 }}">prev | </a>
+    {% else %}
+      <span>prev | </span>
+    {% endif %}
+
+    {% for page in paginator.page_range %}
+      {% if page == page_obj.number %}
+        <span>{{ page }} | </span>
+      {% else %}
+        <a class="page" href="" data-page="{{ page }}">{{ page }} | </a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a class="page" href="" data-page="{{ page_obj.number|add:1 }}">next</a>
+    {% else %}
+      <span>next</span>
+    {% endif %}
+  {% endif %}
+{% endblock %}
